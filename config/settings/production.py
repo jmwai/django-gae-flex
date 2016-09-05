@@ -206,3 +206,21 @@ ADMIN_URL = env('DJANGO_ADMIN_URL')
 
 
 # Your production stuff: Below this line define 3rd party library settings
+
+
+DATABASES = {
+'default': {
+    'ENGINE': 'django.db.backends.mysql',
+    'NAME': 'DB_NAME',
+    'HOST': '104.155.112.74',
+    'PORT': '3306',
+    'USER': 'root',
+    'PASSWORD': 'dj@ng0-ga3-dem0',
+}}
+
+DEFAULT_FILE_STORAGE = 'storages.backends.gs.GSBotoStorage'
+GS_ACCESS_KEY_ID = 'GOOGGBFGFNAQ5ZUBQMQT'
+GS_SECRET_ACCESS_KEY = 'lBMFBDiQvtlwyetRdqwOMXBhVY/jTyvzbrIMjYAA'
+GS_BUCKET_NAME = 'dgfstatic'
+STATICFILES_STORAGE = 'storages.backends.gs.GSBotoStorage'
+STATIC_URL = "http://storage.googleapis.com/{}/static/".format(GS_BUCKET_NAME)

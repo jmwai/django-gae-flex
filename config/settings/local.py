@@ -12,10 +12,14 @@ from .common import *  # noqa
 import socket
 import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 # DEBUG
 # ------------------------------------------------------------------------------
 DEBUG = env.bool('DJANGO_DEBUG', default=True)
 TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
+
 
 # SECRET CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -69,3 +73,9 @@ INSTALLED_APPS += ('django_extensions', )
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # Your local stuff: Below this line define 3rd party library settings
+DATABASES = {
+    'default': {
+      'ENGINE': 'django.db.backends.sqlite3',
+      'NAME': os.path.join(BASE_DIR, 'gae-flex.sqlite3'),
+    }
+  }
