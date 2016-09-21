@@ -1,6 +1,10 @@
+# version: v0.9.0
 runtime: python
 vm: true
-entrypoint: gunicorn -b :$PORT config.wsgi
+entrypoint: gunicorn -b :$PORT config.wsgi #entrypoint.sh
+# entrypoint: entrypoint.sh
+#For simplicity purposes, lets skip migrations for now and just do a
+#gunicorn entrypoint with requirements installation
 
 runtime_config:
   python_version: 3

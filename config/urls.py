@@ -18,6 +18,7 @@ urlpatterns = [
     # User management
     url(r'^users/', include('django_gae.users.urls', namespace='users')),
     url(r'^accounts/', include('allauth.urls')),
+    url(r'^polls/', include('polls.urls', namespace='polls')),
 
     # Your stuff: custom urls includes go here
 
