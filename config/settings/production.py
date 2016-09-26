@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Production Configurations
 
-- Use djangosecure
-- Use Amazon's S3 for storing static files and uploaded media
-- Use mailgun to send emails
-- Use Redis on Heroku
-
-
-"""
 from __future__ import absolute_import, unicode_literals
+import os
 
 from boto.s3.connection import OrdinaryCallingFormat
 from django.utils import six
@@ -21,42 +13,14 @@ from .common import *  # noqa
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 # Raises ImproperlyConfigured exception if DJANGO_SECRET_KEY not in os.environ
-SECRET_KEY = env('DJANGO_SECRET_KEY')
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
-
-# This ensures that Django will be able to detect a secure connection
-# properly on Heroku.
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# Use Whitenoise to serve static files
-# See: https://whitenoise.readthedocs.io/
-WHITENOISE_MIDDLEWARE = ('whitenoise.middleware.WhiteNoiseMiddleware', )
-MIDDLEWARE_CLASSES = WHITENOISE_MIDDLEWARE + MIDDLEWARE_CLASSES
-
-
-# SECURITY CONFIGURATION
-# ------------------------------------------------------------------------------
-# See https://docs.djangoproject.com/en/1.9/ref/middleware/#module-django.middleware.security
-# and https://docs.djangoproject.com/ja/1.9/howto/deployment/checklist/#run-manage-py-check-deploy
-
-# set this to 60 seconds and then to 518400 when you can prove it works
-SECURE_HSTS_SECONDS = 60
-SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
-    'DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True)
-SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
-    'DJANGO_SECURE_CONTENT_TYPE_NOSNIFF', default=True)
-SECURE_BROWSER_XSS_FILTER = True
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = True
-SECURE_SSL_REDIRECT = env.bool('DJANGO_SECURE_SSL_REDIRECT', default=True)
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
-X_FRAME_OPTIONS = 'DENY'
 
 # SITE CONFIGURATION
 # ------------------------------------------------------------------------------
 # Hosts/domain names that are valid for this site
 # See https://docs.djangoproject.com/en/1.6/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['flexible.app'])
+ALLOWED_HOSTS = os.environ['DJANGO_ALLOWED_HOSTS']
 # END SITE CONFIGURATION
 
 INSTALLED_APPS += ('gunicorn', )
@@ -72,20 +36,6 @@ INSTALLED_APPS += (
 )
 
 
-# EMAIL
-# ------------------------------------------------------------------------------
-DEFAULT_FROM_EMAIL = env('DJANGO_DEFAULT_FROM_EMAIL',
-                         default='django-gae <noreply@flexible.app>')
-EMAIL_SUBJECT_PREFIX = env('DJANGO_EMAIL_SUBJECT_PREFIX', default='[django-gae] ')
-SERVER_EMAIL = env('DJANGO_SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
-
-# Anymail with Mailgun
-INSTALLED_APPS += ("anymail", )
-ANYMAIL = {
-    "MAILGUN_API_KEY": env('DJANGO_MAILGUN_API_KEY'),
-}
-EMAIL_BACKEND = "anymail.backends.mailgun.MailgunBackend"
-
 # TEMPLATE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See:
@@ -95,40 +45,25 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
         'django.template.loaders.filesystem.Loader', 'django.template.loaders.app_directories.Loader', ]),
 ]
 
-# DATABASE CONFIGURATION
+
 # ------------------------------------------------------------------------------
-# Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-# DATABASES['default'] = env.db('DATABASE_URL')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'HOST': '/cloudsql/demos-2016:europe-west1',
-        'NAME': 'django-on-flex',
-        'USER': 'root',
-        'PASSWORD': 'gae-flex'
-    }
-}
-
-# CACHING
-# ------------------------------------------------------------------------------
-# Heroku URL does not pass the DB number, so we parse it in
-
-#Port this to Gae
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': '{0}/{1}'.format(env('REDIS_URL', default='redis://127.0.0.1:6379'), 0),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'IGNORE_EXCEPTIONS': True,  # mimics memcache behavior.
-                                        # http://niwinz.github.io/django-redis/latest/#_memcached_exceptions_behavior
-        }
-    }
-}
+#TODO Port this to GAE
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': '{0}/{1}'.format(env('REDIS_URL', default='redis://127.0.0.1:6379'), 0),
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#             'IGNORE_EXCEPTIONS': True,  # mimics memcache behavior.
+#                                         # http://niwinz.github.io/django-redis/latest/#_memcached_exceptions_behavior
+#         }
+#     }
+# }
 
 
 # LOGGING CONFIGURATION
+#TODO Ensure this works with stackdriver
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
 # A sample logging configuration. The only tangible logging
@@ -184,16 +119,18 @@ LOGGING = {
 DATABASES = {
 'default': {
     'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'DB_NAME',
-    'HOST': '104.155.112.74',
-    'PORT': '3306',
-    'USER': 'root',
-    'PASSWORD': 'dj@ng0-ga3-dem0',
+    'NAME': os.environ['CLOUD_SQL_DATABASE_NAME'],
+    'HOST': os.environ['CLOUD_SQL_DATABASE_HOST'],
+    'PORT': 3306,
+    'USER': os.environ['CLOUD_SQL_DATABASE_USER'],
+    'PASSWORD': os.environ['CLOUD_SQL_DATABASE_PASSWORD']
 }}
 
 DEFAULT_FILE_STORAGE = 'storages.backends.gs.GSBotoStorage'
-GS_ACCESS_KEY_ID = 'GOOGGBFGFNAQ5ZUBQMQT'
-GS_SECRET_ACCESS_KEY = 'lBMFBDiQvtlwyetRdqwOMXBhVY/jTyvzbrIMjYAA'
-GS_BUCKET_NAME = 'dgfstatic'
+GS_ACCESS_KEY_ID = os.environ['GS_ACCESS_KEY_ID']
+GS_SECRET_ACCESS_KEY = os.environ['GS_SECRET_ACCESS_KEY']
+GS_BUCKET_NAME = os.environ['GS_BUCKET_NAME']
 STATICFILES_STORAGE = 'storages.backends.gs.GSBotoStorage'
 STATIC_URL = "http://storage.googleapis.com/{}/static/".format(GS_BUCKET_NAME)
+
+DEBUG = False

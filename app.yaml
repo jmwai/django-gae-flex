@@ -1,10 +1,38 @@
-# version: v0.9.0
+service: pyconza-demo
 runtime: python
 vm: true
-entrypoint: gunicorn -b :$PORT config.wsgi #entrypoint.sh
-# entrypoint: entrypoint.sh
-#For simplicity purposes, lets skip migrations for now and just do a
-#gunicorn entrypoint with requirements installation
+entrypoint: gunicorn -b :$PORT config.wsgi
 
 runtime_config:
   python_version: 3
+
+env_variables:
+  DJANGO_SETTINGS_MODULE: 'config.settings.production'
+  CLOUD_SQL_DATABASE_USER: 'pyconza'
+  CLOUD_SQL_DATABASE_PASSWORD: '@pyconz@'
+  CLOUD_SQL_DATABASE_HOST: '173.194.243.95'
+  CLOUD_SQL_DATABASE_NAME: 'pycondb'
+  DJANGO_SECRET_KEY: 'oa@ol!x_p@^wg9ipi@_&f_pvwqcoyj(dmm@d=sn7*#s%%!^uvq'
+  DJANGO_ALLOWED_HOSTS: ['.appspot.com']
+  GS_ACCESS_KEY_ID: 'GOOGGBFGFNAQ5ZUBQMQT'
+  GS_SECRET_ACCESS_KEY: 'lBMFBDiQvtlwyetRdqwOMXBhVY/jTyvzbrIMjYAA'
+  GS_BUCKET_NAME: 'dgfstatic'
+
+resources:
+  cpu: .5
+  memory_gb: 0.8
+  disk_size_gb: 20
+health_check:
+  enable_health_check: True
+  check_interval_sec: 5
+  timeout_sec: 4
+  unhealthy_threshold: 10
+  healthy_threshold: 3
+  restart_threshold: 60
+
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 2
+  cool_down_period_sec: 120 # default value
+  cpu_utilization:
+    target_utilization: 0.5
